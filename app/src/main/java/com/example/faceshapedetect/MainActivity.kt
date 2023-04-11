@@ -71,8 +71,6 @@ class MainActivity : AppCompatActivity() {
         img_view = findViewById(R.id.imageView2)
         text_view = findViewById(R.id.textView)
         camerabtn = findViewById<Button>(R.id.camerabtn)
-
-        // handling permissions
         checkandGetpermissions()
 
 
@@ -80,15 +78,12 @@ class MainActivity : AppCompatActivity() {
             Log.d("mssg", "button pressed")
             var intent : Intent1 = Intent1(Intent1.ACTION_GET_CONTENT)
             intent.type = "image/*"
-
             startActivityForResult(intent, 250)
         })
-
         camerabtn.setOnClickListener(View.OnClickListener {
             var camera : Intent1 = Intent1(android.provider.MediaStore.ACTION_IMAGE_CAPTURE)
             startActivityForResult(camera, 200)
         })
-
 
     }
 
@@ -111,59 +106,18 @@ class MainActivity : AppCompatActivity() {
         fun ARGBBitmap(img: Bitmap): Bitmap {
             return img.copy(Bitmap.Config.ARGB_8888, true)
         }
-//        val labels = application.assets.open("labels.txt").bufferedReader().use { it.readText() }.split("\n")
-       val filename  = "labels.txt"
-        val inputString = application.assets.open(filename).bufferedReader().use { it.readText() }
-        val townlost = inputString.split("\n")
-
 
 
 
         make_prediction.setOnClickListener(View.OnClickListener {
-          //  val tfliteModel = FaceShapeRecognizer.newInstance(context)
-
-       //     var resized = Bitmap.createScaledBitmap(ARGBBitmap(bitmap!!), 250, 190, true)
-//            bitmap = MediaStore.Images.Media.getBitmap(this.contentResolver, uri.toUri())
-          //  val model = FaceShapeRecognizer.newInstance(this)
-//            var tbuffer = TensorImage.fromBitmap(resized)
-//            val inputWidth = 250
-//            val inputHeight = 190
-//            val inputBuffer = TensorImage(DataType.FLOAT32)
-//            var lanja = TensorImage.fromBitmap(ARGBBitmap(bitmap!!)).bitmap
-//            val resizedBitmap = Bitmap.createScaledBitmap(lanja, inputWidth, inputHeight, true)
-//
-//// Load the resized bitmap into the input buffer.
-//            inputBuffer.load(resizedBitmap)
-//           val tfliteModel = FileUtil.loadMappedFile(applicationContext, "face_shape_recognizer.tflite")
-//            val tflite: Interpreter = Interpreter(tfliteModel)
-//            val outputBuffer = TensorBuffer.createFixedSize(intArrayOf(1, 5), DataType.FLOAT32)
-//            tflite.run(inputBuffer, outputBuffer.buffer)
-//            val labels = listOf("Heart", "Oblong", "Oval", "Round", "Square")
-//            val outputArray = outputBuffer.floatArray
-//            val maxIndex = outputArray.indices.maxByOrNull { outputArray[it] } ?: -1
-//            val predictedLabel = labels[maxIndex]
-//            val inputWidth = 250
-//            val inputHeight = 190
-//            val inputBuffer = TensorImage(DataType.FLOAT32)
-            var lanja = TensorImage.fromBitmap(ARGBBitmap(bitmap!!)).bitmap
-           // val resizedBitmap = Bitmap.createScaledBitmap(lanja, inputWidth, inputHeight, true)
+            val image = TensorImage.fromBitmap(ARGBBitmap(bitmap!!)).bitmap
             val inputWidth = 250
             val inputHeight = 190
             val inputBuffer = TensorBuffer.createFixedSize(intArrayOf(1, inputHeight, inputWidth, 1), DataType.FLOAT32)
-
-// Load your bitmap image and resize it to the expected input size.
-            val resizedBitmap = Bitmap.createScaledBitmap(lanja, inputWidth, inputHeight, true)
-
-// Convert the resized bitmap to a float array and load it into the input buffer.
+            val resizedBitmap = Bitmap.createScaledBitmap(image, inputWidth, inputHeight, true)
             val pixelValues = convertBitmapToFloatArray(resizedBitmap)
             inputBuffer.loadArray(pixelValues)
-
-// Load the resized bitmap into the input buffer.
-          //  inputBuffer.load(resizedBitmap)
-
-// Convert the TensorImage to a TensorBuffer.
             val inputTensorBuffer = inputBuffer.buffer
-
             val tfliteModel = FileUtil.loadMappedFile(applicationContext, "face_shape_recognizer.tflite")
             val tflite: Interpreter = Interpreter(tfliteModel)
             val outputBuffer = TensorBuffer.createFixedSize(intArrayOf(1, 5), DataType.FLOAT32)
@@ -172,58 +126,19 @@ class MainActivity : AppCompatActivity() {
             val outputArray = outputBuffer.floatArray
             val maxIndex = outputArray.indices.maxByOrNull { outputArray[it] } ?: -1
             val predictedLabel = labels[maxIndex]
-
-//            val argbBitmap =
-//                bitmap?.copy(Bitmap.Config.ARGB_8888, true) // Convert bitmap to ARGB_8888 format
-//            val tensorImage = TensorImage.fromBitmap(argbBitmap).bitmap
-//
-//            val inputBitmap = Bitmap.createScaledBitmap(tensorImage, 250, 190, true)
-          //  val inputBuffer = TensorImage.fromBitmap(inputBitmap).buffer
-
-         //   var inputimage = Bitmap.createScaledBitmap(lanja.bitmap, 250, 190, true)
-            //    = TensorImage.fromBitmap(ARGBBitmap(bitmap!!))
-            //    val inputBuffer = TensorImage.fromBitmap(inputimage).buffer
-
-
-//                var byteBuffer = tbuffer.buffer
-// Creates inputs for reference.
-            //    val inputFeature0 =
-             //       TensorBuffer.createFixedSize(intArrayOf(1, 250, 190, 1), DataType.FLOAT32)
-//                inputFeature0.loadBuffer(byteBuffer)
-            //    val scaled = Bitmap.createScaledBitmap(tbuffer.bitmap, 250, 190, true)
-//                var byteBuffer = ByteBuffer.allocate(scaled.height * scaled.rowBytes)
-//                scaled.copyPixelsToBuffer(byteBuffer)
-//                inputFeature0.loadBuffer(byteBuffer)
-
-// Runs model inference and gets result.
-//                val outputs = model.process(inputFeature0)
-//                val outputFeature0 = outputs.outputFeature0AsTensorBuffer
-
-//                var max = getMax(outputFeature0.floatArray)
-
-                text_view.setText(predictedLabel)
-
-// Releases model resources if no longer used.
+            text_view.text = predictedLabel
             tflite.close()
         }   )
 
     }
     fun convertBitmapToFloatArray(bitmap: Bitmap): FloatArray {
-        // Calculate the total number of pixels.
         val numPixels = bitmap.width * bitmap.height
-
-        // Allocate a buffer to hold the pixel values.
         val pixels = IntArray(numPixels)
-
-        // Get the pixel values from the bitmap.
         bitmap.getPixels(pixels, 0, bitmap.width, 0, 0, bitmap.width, bitmap.height)
-
-        // Convert the pixel values to a float array.
         val floatValues = FloatArray(numPixels)
         for (i in 0 until numPixels) {
             floatValues[i] = (pixels[i] and 0xFF) / 255.0f
         }
-
         return floatValues
     }
 
