@@ -113,7 +113,7 @@ class MainActivity : AppCompatActivity() {
     fun ARGBBitmap(img: Bitmap): Bitmap {
         return img.copy(Bitmap.Config.ARGB_8888, true)
     }
-    fun makeprediction(){
+    fun makeprediction() {
         val image = TensorImage.fromBitmap(ARGBBitmap(bitmap!!)).bitmap
         val inputWidth = 250
         val inputHeight = 190
@@ -129,11 +129,13 @@ class MainActivity : AppCompatActivity() {
         val labels = listOf("Heart", "Oblong", "Oval", "Round", "Square")
         val outputArray = outputBuffer.floatArray
         val maxIndex = outputArray.indices.maxByOrNull { outputArray[it] } ?: -1
-        predictedLabel = labels[maxIndex]
-        text_view.text = predictedLabel
+        predictedLabel = if (maxIndex != -1) labels[maxIndex]
+        else null.toString()   // Return null if there's no face detected
+        text_view.text = predictedLabel ?: "Null" // Set text_view to "Null" if predictedLabel is null
         tflite.close()
 
     }
+
     fun convertBitmapToFloatArray(bitmap: Bitmap): FloatArray {
         val numPixels = bitmap.width * bitmap.height
         val pixels = IntArray(numPixels)
